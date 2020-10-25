@@ -30,8 +30,8 @@ namespace Alexa_Start_Work
 
             //if (requestType == typeof(LaunchRequest))
             {
-                response = ResponseBuilder.Tell("Don't anger me!!");
-                response.Response.ShouldEndSession = false;
+                response = ResponseBuilder.Tell($"This early? You've got to be kidding me... In the future I'll be able to tell you how long until your standup at 09:15, how many emails you received since you finished work, and start up any azure resources you need for the day. For now enjoy your coffee, it's {DateTime.Now.ToShortTimeString()}.");
+                response.Response.ShouldEndSession = true;
             }
 
             return new OkObjectResult(response);
