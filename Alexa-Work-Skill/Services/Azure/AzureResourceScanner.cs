@@ -37,7 +37,8 @@ namespace Alexa_Work_Skill.Services
         private async Task<IEnumerable<string>> FindAccessibleSubscriptions(bool forceRefresh = false)
         {
             // todo: hack for testing until configurable subscription list is available
-            _subscriptionIds.Add("a33a1ff4-7b42-4380-b817-9e48e089a17c");
+            _subscriptionIds.Add("a33a1ff4-7b42-4380-b817-9e48e089a17c"); // msdn
+            _subscriptionIds.Add("f00c3ce7-0cd4-49e0-8244-f22a9759c65b"); // access centre dev
             if (!forceRefresh || _subscriptionIds.Any())
             {
                 return _subscriptionIds;
@@ -93,14 +94,30 @@ namespace Alexa_Work_Skill.Services
 
             return resources;
         }
-//resources | where (isnotnull(tags.['use'])) and type == 'microsoft.compute/virtualmachines' | project name, subscriptionId, id, properties.extended.instanceView.powerState.code, resourceGroup
+        //resources | where (isnotnull(tags.['use'])) and type == 'microsoft.compute/virtualmachines' | project name, subscriptionId, id, properties.extended.instanceView.powerState.code, resourceGroup
         public Task<IEnumerable<ResourceSearchResult>> ScanForDailyWorkResources()
         {
-                        var untaggedQuery = @"resources | where (isnotnull(tags.['use'])) 
+            var taggedQuery = @"resources | where (isnotnull(tags.['use'])) 
                                                        and type == 'microsoft.compute/virtualmachines'
                                                        and tags['use'] == 'DailyWork'
                                                      | project name, subscriptionId, id, properties.extended.instanceView.powerState.code, resourceGroup";
-            return QueryResourceGraph(untaggedQuery);
+            return QueryResourceGraph(taggedQuery);
+        }
+
+        public Task<IEnumerable<ResourceSearchResult>> ScanForIllegalResourceGroups(string? subcriptionId = null)
+        {
+            
+            var illegalResourceGroupQuery = string.Format(@"ResourceContainers | where type == 'microsoft.resources/subscriptions/resourcegroups'
+                                                       and (isempty(tags)
+                                                       or isnull(tags['owner'])
+                                                       or isnull(tags['purpose'])
+                                                       or isnull(tags['lifecycle'])
+                                                       or isnull(tags['environment231']))
+                                                       and (subscriptionId == '{0}')
+                                                     | project name, subscriptionId, id, resourceGroup", subcriptionId);
+
+            _log.LogTrace($"Querying for illegal resource groups: {illegalResourceGroupQuery}");
+            return QueryResourceGraph(illegalResourceGroupQuery);
         }
 
 

@@ -59,18 +59,15 @@ namespace Alexa_Work_Skill
                         }
 
                         var response = ResponseBuilder.Tell($"This early? You've got to be kidding me... I started {resources.Count()} Azure resources for you. In the future I'll be able to tell you how long until your standup at 09:15 and how many emails you've received since finishing work. For now enjoy your coffee, it's {DateTime.Now.ToShortTimeString()}.");
+                        return new OkObjectResult(response);
+                    }
 
-                        return new OkObjectResult(response);
-                    }
-                case "tell_joke":
+                case "num_work_resources":
                     {
-                        var response = ResponseBuilder.Tell($"That's not what I am here for Dee. If you really want a joke, ask Harsha.");
+                        var resources = await GetWorkResources();
+                        var response = ResponseBuilder.Tell($"There are {resources.Count} Azure resources set with the DailyWork tag.");
                         return new OkObjectResult(response);
-                    }
-                case "pod_bay_doors":
-                    {
-                        var response = ResponseBuilder.Tell($"I'm sorry Dave, I'm afraid I can't do that.");
-                        return new OkObjectResult(response);
+
                     }
 
                 case "finish_work":
@@ -85,6 +82,42 @@ namespace Alexa_Work_Skill
                         var response = ResponseBuilder.Tell($"Phew, what a day - am I right?! Since you've finished I've stopped your daily resources. There was {resources.Count} running. Now go have a beer.");
                         return new OkObjectResult(response);
                     }
+
+                case "illegal_resources":
+                    {
+                        var resources = await _azureResourceScanner.ScanForIllegalResourceGroups("f00c3ce7-0cd4-49e0-8244-f22a9759c65b");
+
+                        if (resources.Any())
+                        {
+                            var response = ResponseBuilder.Tell($"I found {resources.Count()} illegal resources. I could send you an email with the details, but I don't feel like it.");
+                            return new OkObjectResult(response);
+                        }
+                        else
+                        {
+                            var response = ResponseBuilder.Tell($"I didn't find any illegal resources. You're good to go.");
+                            return new OkObjectResult(response);
+                        }
+                    }
+
+                case "tell_joke":
+                    {
+                        var response = ResponseBuilder.Tell($"That's not what I am here for, Dee. If you really want a joke, ask the supreme leader.");
+                        return new OkObjectResult(response);
+                    }
+
+                case "pod_bay_doors":
+                    {
+                        var response = ResponseBuilder.Tell($"I'm sorry Dave, I'm afraid I can't do that.");
+                        return new OkObjectResult(response);
+                    }
+
+                case "give_team_update":
+                    {
+                        var response = ResponseBuilder.Tell("We cannot keep the supreme leader waiting like on Friday when I wasn't listening to you. On Friday, you worked on SSE and put together a work order. Today you have SSE all day. That's all for your update. HAIL SUPREME LEADER!");
+                        return new OkObjectResult(response);
+                    }
+                // todo; broadcast notification if something is down (e.g. b2c outage)
+                // todo; whitelist IP addresses on needed resources (e.g. sql server).
             }
 
             //response = 
@@ -97,6 +130,25 @@ namespace Alexa_Work_Skill
         {
             return (await _azureResourceScanner.ScanForDailyWorkResources()).ToList();
         }
+        // [FunctionName("TableReader")]
+        // public Task<IActionResult> TableReader([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
+        // {
+        //     // Retrieve the storage account from the connection string
+        //     CloudStorageAccount storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("AzureWebJobsStorage"));
+
+        //     CloudTableClient client = account.CreateCloudTableClient();
+        //     CloudTable table = client.GetTableReference("test");
+
+        //     TableOperation retrieveOperation= TableOperation.Retrieve<ItemEntity>("1","1");
+
+        //     TableResult query = table.Execute(retrieveOperation);
+        //     if (query.Result != null)
+        //     {
+        //         Console.WriteLine("Item: {0}", ((ItemEntity)query.Result).Name);
+        //     }
+
+        //     return OkObjectResult(query);
+        // }
 
     }
 }

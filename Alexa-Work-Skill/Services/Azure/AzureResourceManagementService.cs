@@ -58,16 +58,6 @@ namespace Alexa_Work_Skill.Services
             var templateData = await request.Content.ReadAsStringAsync();
             _log.LogTrace($"VmStart request response: {templateData}");
             return templateData;
-
-            // POST https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}/exportTemplate?api-version=2020-06-01
-            // todo: tweak based on output and ease of re-deploy
-            // var resourceManagerClient = new ResourcesManagementClient(subscriptionId, _tokenCredential);
-            // var exportedTemplate = await resourceManagerClient.ResourceGroups.StartExportTemplateAsync(groupName,
-            // // todo: this is required but read-only? hmm
-            // new Azure.ResourceManager.Resources.Models.ExportTemplateRequest() { Resources = new[] { "*" } });
-            // new Azure.ResourceManager.Resources.Models.ExportTemplateRequest() { });
-            // if (exportedTemplate.HasValue) return (string)exportedTemplate.Value.Template; // todo: y tho?
-            // return string.Empty;
         }
 
     }
